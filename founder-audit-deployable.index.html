@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Founder Bottleneck Audit | Roxy</title>
+<meta name="description" content="The 12-minute operational diagnostic for $1M to $3M coaching CEOs. Find the structural leak capping your growth.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<style>
+  body { margin: 0; padding: 0; background: #1A0508; min-height: 100vh; font-family: 'Inter', system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-type="module">
+const { useState, useEffect } = React;
+
+const sections = [
+  { number: '01', title: 'Founder Dependency', description: 'How much of the business still routes through you.' },
+  { number: '02', title: 'Team & Ownership', description: 'Whether your people operate as a system or as individual contractors.' },
+  { number: '03', title: 'Systems & Operations', description: 'Whether your business runs on documented architecture or tribal knowledge.' },
+  { number: '04', title: 'Strategy & Numbers', description: 'Whether you lead with data and direction, or with instinct and reaction.' },
+];
+
+const questions = [
+  { section: 0, title: 'Decision Authority', prompt: 'It is Tuesday, 2:47pm. Your team needs to decide whether to extend a launch deadline by 48 hours. What actually happens?', options: [
+    { points: 1, text: 'Everyone waits for me to weigh in. The decision sits in Slack until I respond.' },
+    { points: 2, text: 'My team escalates to me with a recommendation. I make the final call.' },
+    { points: 3, text: 'My team makes the call, then notifies me afterward, but only because we have talked through similar situations before.' },
+    { points: 4, text: 'My team makes the call within their defined decision authority. I hear about it in our weekly sync.' },
+    { points: 5, text: 'The launch owner already made it using our launch SOP. I would see it in the scorecard, not in real time.' },
+  ]},
+  { section: 0, title: 'Founder Calendar', prompt: 'Pull up your calendar from last Wednesday. What percentage of your hours were spent on operational and coordination work (Slack messages, approvals, fixing things, answering team questions)?', options: [
+    { points: 1, text: 'Over 70 percent of my day. Most of it was reactive.' },
+    { points: 2, text: '50 to 70 percent. I had maybe 2 deep-work blocks. The rest was reactive.' },
+    { points: 3, text: '30 to 50 percent. Half operational, half strategic. Days feel split.' },
+    { points: 4, text: '10 to 30 percent. I am mostly on sales calls, content, or strategy. Operations only happen in scheduled syncs.' },
+    { points: 5, text: 'Under 10 percent. Two scheduled team touchpoints (15 minutes each). The rest was vision, content, strategy, and rest.' },
+  ]},
+  { section: 0, title: 'The Founder Removal Test', prompt: 'You unplug for 14 days. No Slack, no email, no calls, fully off grid. After 14 days, what did the business actually do?', options: [
+    { points: 1, text: 'Honest answer: revenue would drop, projects would stall, my team would be paralyzed by Day 3.' },
+    { points: 2, text: 'Revenue might dip, launches would stall, but baseline operations would limp along.' },
+    { points: 3, text: 'Revenue is mostly fine, ongoing client work continues, but no new initiatives move forward.' },
+    { points: 4, text: 'The business runs. Revenue is on track. Initiatives may slow but do not stop. I would come back to a clean update.' },
+    { points: 5, text: 'Honestly? The business might run BETTER without me in the operational loop for 14 days. My team has done it before.' },
+  ]},
+  { section: 0, title: 'Content & Founder Voice', prompt: 'Your team needs a piece of content this week. A LinkedIn post, a sales page, a launch email. What actually happens?', options: [
+    { points: 1, text: 'I write it myself. Or I outline it so heavily that my team is just transcribing me.' },
+    { points: 2, text: 'My team drafts something. I rewrite 60 percent of it before it goes out.' },
+    { points: 3, text: 'My team drafts. I do a light pass for voice and approve it.' },
+    { points: 4, text: 'My copywriter or content lead has my voice down. I review only the high-stakes pieces (sales pages, launch emails).' },
+    { points: 5, text: 'My team produces content in my voice consistently. I review monthly batches, not individual pieces. The system runs without me.' },
+  ]},
+  { section: 0, title: 'Founder Energy & Recovery', prompt: 'Last weekend. Be honest. How much of it did you actually rest, with your phone away and your business off your mind?', options: [
+    { points: 1, text: 'None. I worked through the weekend. I check Slack from bed.' },
+    { points: 2, text: 'A few hours Saturday or Sunday. I was still on call for emergencies.' },
+    { points: 3, text: 'One full day off, but my team knew they could reach me. I checked messages 2 to 3 times.' },
+    { points: 4, text: 'Both days off. I checked once on Sunday evening to scan for anything urgent.' },
+    { points: 5, text: 'Full weekend disconnected. My team handles weekend issues without me. I came back Monday rested.' },
+  ]},
+  { section: 1, title: 'Ownership & Accountability', prompt: 'Open a blank doc right now. Can you list every key function in your business (marketing, sales, fulfillment, operations, support, finance) and write the SINGLE name accountable for each, without thinking?', options: [
+    { points: 1, text: 'Most functions have multiple people involved. There is no single owner. My name appears next to most of them.' },
+    { points: 2, text: 'I can name people, but the same name appears 3 to 4 times. One person carries everything.' },
+    { points: 3, text: 'Roughly one owner per function, but for at least 2 of them, I would have to think or hedge ("kind of me, kind of [name]").' },
+    { points: 4, text: 'Yes. Clean ownership, one name per function. We have talked about this in team meetings.' },
+    { points: 5, text: 'Yes, and it is documented in our Accountability Chart. Every team member knows their role and the boundaries between roles.' },
+  ]},
+  { section: 1, title: 'Right People, Right Seats', prompt: 'Think about your current team. If you had to honestly evaluate each person on three things (do they GET the role, do they WANT the role, do they have the CAPACITY for it), how many fit all three?', options: [
+    { points: 1, text: 'I have not even thought about it this way. Right now I am just glad I have warm bodies.' },
+    { points: 2, text: 'At least 1 or 2 people are clearly in the wrong seat, but I am avoiding the conversation.' },
+    { points: 3, text: 'Most of my team fits. There is one person I am not sure about and I keep putting off the decision.' },
+    { points: 4, text: 'My team mostly fits. We have had honest conversations. Recent hires were filtered for these criteria.' },
+    { points: 5, text: 'Every person on my team gets it, wants it, and has capacity. We have removed people who did not, and the team is stronger for it.' },
+  ]},
+  { section: 1, title: 'Hiring & Onboarding', prompt: 'You hired a new team member last quarter. Be honest: how long until they were producing work at the level you needed, without you correcting it?', options: [
+    { points: 1, text: 'Still not there. Or, I had to let them go and re-hire.' },
+    { points: 2, text: '8 to 12 weeks of heavy involvement from me. I rewrote their work multiple times.' },
+    { points: 3, text: '4 to 6 weeks, with regular feedback loops. I was still the main onboarder.' },
+    { points: 4, text: '2 to 3 weeks. We have an onboarding doc. Someone other than me ran most of the onboarding.' },
+    { points: 5, text: 'Within 2 weeks they were shipping at standard. We have a documented onboarding system, a 30/60/90 plan, and a designated trainer.' },
+  ]},
+  { section: 1, title: 'Communication & Visibility', prompt: 'Right now, without messaging anyone, can you tell me: (a) status of your top 3 priorities, (b) cash position this month, (c) which clients are at risk of churning, (d) which team member is overloaded?', options: [
+    { points: 1, text: 'I would have to ask multiple people. Some of these I genuinely do not know.' },
+    { points: 2, text: 'I know 1 or 2 of these. The rest I would have to dig for.' },
+    { points: 3, text: 'I know 3 of 4. Only because I happened to discuss them this week.' },
+    { points: 4, text: 'Yes. I check our dashboard once a week and I have the high-level numbers.' },
+    { points: 5, text: 'Yes. The data updates automatically. My OBM or Integrator surfaces what needs my attention. I do not chase information.' },
+  ]},
+  { section: 1, title: 'Meeting Rhythm', prompt: "What does your team's weekly meeting structure actually look like right now?", options: [
+    { points: 1, text: 'We do not have a regular team meeting. We just sync in Slack as needed.' },
+    { points: 2, text: 'We meet when there is a fire. Sometimes weekly, sometimes not. The agenda changes every time.' },
+    { points: 3, text: 'We have a weekly meeting, but it usually runs long, drifts off topic, and ends without clear actions.' },
+    { points: 4, text: 'We have a structured weekly meeting (60 to 90 minutes) with a consistent agenda. Decisions get made. Action items get tracked.' },
+    { points: 5, text: 'Weekly Level 10 meeting, 90 minutes exactly, same agenda every week, scorecard reviewed, issues solved, action items assigned. The team runs it without me if needed.' },
+  ]},
+  { section: 2, title: 'Sales-to-Delivery Handoff', prompt: 'A new client signs a $25K coaching package on Friday at 4pm. Walk through what happens between Friday 4pm and Monday morning.', options: [
+    { points: 1, text: 'I personally onboard them. If I am offline, the client waits.' },
+    { points: 2, text: 'My VA sends a welcome email, but only after I remind them. The client does not hear from us until I send the kickoff invite manually.' },
+    { points: 3, text: 'We have an onboarding sequence, but it lives in someone\'s head. The first week is always slightly different per client.' },
+    { points: 4, text: 'We have a documented onboarding workflow. The Client Success owner runs it. I just review the kickoff invite.' },
+    { points: 5, text: 'New clients hit a fully systemized onboarding (automation plus human touch) within 2 hours of signing. The Client Success owner runs it end to end. I see metrics in the weekly scorecard.' },
+  ]},
+  { section: 2, title: 'Documentation State', prompt: 'Right now, how much of your business is actually documented? Not in someone\'s head. Actually written down where a new hire could find it.', options: [
+    { points: 1, text: 'Almost nothing. We onboard by shadowing and asking questions. Knowledge lives with whoever has been here longest.' },
+    { points: 2, text: 'A few rough Google Docs exist. They are outdated. Nobody uses them.' },
+    { points: 3, text: 'Core processes are documented (onboarding, basic fulfillment). Most workflows still are not.' },
+    { points: 4, text: 'We have an SOP library covering the major workflows. It gets updated when something changes.' },
+    { points: 5, text: 'Every key process has an SOP. They are versioned, owned by named team members, and reviewed quarterly. New hires onboard from the library, not from me.' },
+  ]},
+  { section: 2, title: 'Launch Operations', prompt: 'You are 3 days out from a launch. What does your evening look like Tuesday at 9pm?', options: [
+    { points: 1, text: 'I am in 4 different DMs, fixing copy, approving graphics, and re-recording a video because something did not render right.' },
+    { points: 2, text: 'I am reviewing what my team built today and flagging things to fix tomorrow. I expect to be working tonight.' },
+    { points: 3, text: 'I check in with the launch lead on tomorrow\'s deliverables, then close the laptop. There is still a sense of "is everything actually covered?"' },
+    { points: 4, text: 'I reviewed the launch dashboard at 4pm. Everything was on track. I am not working tonight.' },
+    { points: 5, text: 'I have not been in launch logistics for 2 weeks. The launch owner runs the meetings, the team executes, I show up only for content I am uniquely needed for.' },
+  ]},
+  { section: 2, title: 'Tool Stack & Tech Debt', prompt: 'Look at your current tech stack. Project management tool, Slack, your CRM, your calendar tool, your course platform. How well is it actually serving you?', options: [
+    { points: 1, text: 'We use 8 or more tools. Half are paid for, barely used. Information lives in too many places. Nobody knows where to find anything.' },
+    { points: 2, text: 'We have the tools but nobody is fully trained on them. We default to Slack for everything because it is easier.' },
+    { points: 3, text: 'The tools work, but they are not integrated. People copy-paste between systems. Reporting is manual.' },
+    { points: 4, text: 'Our stack is intentional. Tools are used as designed. Most workflows live where they should.' },
+    { points: 5, text: 'Every tool in our stack earns its place. Workflows are integrated, automation handles the repetitive work, the team knows the systems.' },
+  ]},
+  { section: 2, title: 'Client Fulfillment Quality', prompt: 'How predictable is the experience your top-tier clients receive? If you asked five different clients what their first 30 days looked like, how similar would their answers be?', options: [
+    { points: 1, text: 'Wildly different. Each client gets a custom onboarding because we figure it out as we go.' },
+    { points: 2, text: 'Mostly similar in spirit, but the details vary based on which team member is leading them.' },
+    { points: 3, text: 'There is a baseline experience, but special cases and exceptions happen often.' },
+    { points: 4, text: 'The first 30 days are pretty consistent. We have a structured journey, even if some flexibility exists.' },
+    { points: 5, text: 'Identical structure for every client. We deliver the same proven experience at scale. Customization happens within a framework, not on top of it.' },
+  ]},
+  { section: 3, title: 'Strategic Focus & Initiative Load', prompt: 'List every active initiative your business is currently pushing forward. New offer, hiring, system rebuild, content push, partnerships, all of it. How many are there?', options: [
+    { points: 1, text: '8 or more. I cannot even list them all in one breath.' },
+    { points: 2, text: '6 or 7 active initiatives, most needing my input.' },
+    { points: 3, text: '4 or 5. I know what they are and (mostly) who is leading.' },
+    { points: 4, text: '3 active initiatives this quarter, with one clear owner each. Everything else is in backlog.' },
+    { points: 5, text: '3 quarterly Rocks, owned by named team members, reviewed weekly. Nothing else moves until these are done.' },
+  ]},
+  { section: 3, title: 'Quarterly Planning Rhythm', prompt: 'What is your planning cadence? When was the last time you sat down to set deliberate priorities for the next 90 days?', options: [
+    { points: 1, text: 'I do not really plan in advance. I respond to what comes up and do what feels right that week.' },
+    { points: 2, text: 'I set goals at the start of the year. Most are forgotten by Q2.' },
+    { points: 3, text: 'I plan loosely each quarter, but it is more of a wishlist than a commitment. Plans drift.' },
+    { points: 4, text: 'We do quarterly planning. We set 3 to 5 priorities, assign owners, and review them in our weekly meetings.' },
+    { points: 5, text: 'Quarterly Rocks are non-negotiable. Set, owned, tracked weekly. Annual planning sets the direction. The team executes against it.' },
+  ]},
+  { section: 3, title: 'Cash Flow & Financial Visibility', prompt: 'Right now, without checking with your bookkeeper or accountant, can you tell me your monthly recurring revenue, your gross margin, and how many months of runway you have at current burn?', options: [
+    { points: 1, text: 'I would need to ask my bookkeeper. I genuinely do not know my margin off the top of my head.' },
+    { points: 2, text: 'I know revenue. Margin and runway I would have to calculate or guess.' },
+    { points: 3, text: 'I know revenue and rough margin. Runway is estimated, not tracked.' },
+    { points: 4, text: 'Yes to all three. I review my financial dashboard monthly with my team or accountant.' },
+    { points: 5, text: 'Yes, and I review weekly. My finance owner surfaces variances. I make decisions from numbers, not feel.' },
+  ]},
+  { section: 3, title: 'Revenue Operations & Client Health', prompt: 'Your top client this month. Without asking anyone, can you tell me their current results, last touchpoint, and renewal probability?', options: [
+    { points: 1, text: 'I would have to ask my team. Even then I would be piecing it together from memory.' },
+    { points: 2, text: 'I know results-ish (we just had a call). Renewal probability is a guess.' },
+    { points: 3, text: 'Yes for top clients. For mid-tier, I would need to check.' },
+    { points: 4, text: 'Yes. We track client health. I review it monthly with the Client Success owner.' },
+    { points: 5, text: 'Yes. Every client has a health score updated weekly. Renewal forecasts are calculated, not guessed.' },
+  ]},
+  { section: 3, title: 'Vision Clarity', prompt: 'If I asked your team today (any one of them, picked at random) where the company will be in 12 months, what would they say?', options: [
+    { points: 1, text: 'They would not know. Honestly, I am not sure either. We are in survival mode.' },
+    { points: 2, text: 'They would give me the revenue goal, maybe. Beyond that, no clear direction.' },
+    { points: 3, text: 'My senior team knows the goals. The rest of the team has heard them but could not recite them.' },
+    { points: 4, text: 'My team can articulate where we are going, what we are building, and why. We talk about it regularly.' },
+    { points: 5, text: 'Every team member knows the 1-year and 3-year vision, the values, and the metrics that matter. They can repeat it because they live it daily.' },
+  ]},
+];
+
+const tierData = {
+  1: {
+    badge: 'TIER 1 of 5', name: 'The Founder Trap',
+    verdict: 'You are not running the business. You ARE the business. The day you stop, it stops.',
+    built: ['A real offer that is converting (you did not get to $1M+ on luck)','Revenue that is stable enough to support hires','A team, even if small, that you have personally trained','Systems that exist in your head and (mostly) work','A reputation in your market that opens doors'],
+    missing: 'You have built the engine. The engine has no chassis. Right now, your business runs on YOUR brain, YOUR availability, and YOUR decisions. There is no second-in-command, no documented ownership chart, no system that survives without you. You are not bottlenecked because you are inefficient. You are bottlenecked because the architecture was never built. Hiring more "doers" will not fix this. You need an operator who can absorb the operational layer of the business so you can step back into vision and growth.',
+    cost: 'You are capped at roughly $1.2M to $1.5M no matter how good your marketing gets. Every new client adds load to YOU, not to a system. At your current trajectory, scaling past this ceiling will either burn you out, blow up your team, or both, usually within 12 months.',
+    quickWinTruth: 'Here is what nobody else will tell you. You did not build a team that needs you. You built a team that orbits you. There is a difference. Every time someone tried to decide, you corrected them. Eventually, they stopped trying. The bottleneck you keep blaming on "I just have to do everything myself" is a habit you trained, not a reality you inherited.',
+    quickWinHeader: 'What to do this week:',
+    quickWinSteps: ['Pick ONE function. Start with Client Success or Operations, whichever feels safest to let go of first.','Find the strongest person already working in that area.','Sit with them for 60 minutes. Tell them, in writing: "Starting today, you own this. These specific decisions are yours. These are the ones I want flagged. I am out of the daily."','Then actually step out. No checking Slack to "see how it\'s going." No swooping in to fix.'],
+    quickWinWhy: 'The first week will feel uncomfortable. You will see things done differently than how you would do them. You will feel useless at moments. That feeling is data, not a problem. It is telling you that your identity has been wrapped up in being the one who decides everything. The discomfort is the price of finally building a real business instead of a one-person operation with employees attached. Most founders skip this step because the discomfort is too high. The ones who scale past $1.5M are the ones who sit with it long enough for the new reality to settle.',
+    shiftTruth: 'The reason none of your senior hires have "really worked out" is not because they were the wrong people. It is because you keep hiring more doers, and doers do not make you feel replaceable. An operator does. So you keep hiring around the real problem, telling yourself "I just need to find the right person." You will not find them, because you are not actually looking for them.',
+    shiftHeader: 'What to do in the next 30 days:',
+    shiftSteps: ['Map out every function in your business: Marketing, Sales, Client Success, Operations, Finance, Support.','Assign a single accountable owner to each function. One name. No committees.','If a function does not have a qualified internal owner, flag it as a hire to make in the next 90 days.','Run a 60-minute meeting with each owner. Define their domain, their decision authority, what they report on weekly, what they escalate to you.','Document this in a one-page Accountability Chart and share it with the whole team.'],
+    shiftWhy: 'The reason your business feels heavy is not that you have too much work. It is that you are absorbing the weight of every decision in every department. Distributing ownership does not just reduce your workload by 10 percent. It reduces it by 60. But the bigger shift is internal. The Accountability Chart forces you to confront what you have been avoiding: you do not need to do most of this. You have just not let go. Once it exists in writing, you cannot un-see it. That is the point.',
+    rebuild: 'Hire or promote an OBM or Integrator. This single move reshapes your business more than any marketing channel will. Your job for the next quarter becomes finding, vetting, and onboarding that person. Everything else is secondary.',
+    cta: 'This is the tier where the right operator unlocks 6 figures in 90 days.',
+    ctaButton: 'Book Your Operational Diagnosis Call',
+  },
+  2: {
+    badge: 'TIER 2 of 5', name: 'The Coordination Gap',
+    verdict: 'You have a team. They operate as individual contractors instead of a unit.',
+    built: ['Hired solid talent (you are not doing every task yourself anymore)','A baseline launch process that works most of the time','Recurring revenue that is not 100 percent dependent on you','A general sense of who does what','A reputation that is bringing in inbound interest'],
+    missing: 'Each person on your team does their job. Nobody is connecting the dots between them. When something falls through the cracks, it falls there because no one owned the handoff. Launches still feel chaotic, not because the people are bad, but because there is no Integrator or OBM holding the lines together. You hired for execution. You have not hired for coordination yet. The result is a team of capable individuals working in parallel, instead of a team operating as a single system.',
+    cost: 'You are losing 15 to 20 percent of potential revenue to dropped balls, slow launches, missed follow-ups, and onboarding leaks. At your stage, that is $150K to $600K per year, every year, until you install the coordination layer.',
+    quickWinTruth: 'You do not have a team problem. You have a coordination problem. And you have been blaming the wrong people. Probably your VA. Probably your launch lead. They are not the issue. The issue is that there is nobody whose actual job is to make the team move as one unit. So everyone does their part, and the cracks in between are where your revenue is leaking.',
+    quickWinHeader: 'What to do this week:',
+    quickWinSteps: ['Schedule a 90-minute team meeting (call it a Level 10 meeting).','Use this exact agenda: 5 min segue (good news only), 5 min scorecard review, 5 min priority check-in, 5 min customer or team headlines, 5 min done or not-done from last week, 60 min IDS (Identify, Discuss, Solve top 3 issues), 5 min rate the meeting and close.','Do not end the meeting until those 3 issues have a name and a decision attached.'],
+    quickWinWhy: 'Most coaching businesses your size think they have a team meeting. What they actually have is a status update where everyone reports activity and nobody decides anything. That is not a meeting. That is a podcast. A real meeting produces decisions. When you run one this week, you will notice two things. First, how many issues have been quietly recurring for months because nobody had the authority to solve them. Second, how much faster the team moves when there is a forum to handle problems instead of letting them rot in Slack. The shift is not the meeting itself. It is your team realizing that decisions actually get made now.',
+    shiftTruth: 'Here is what nobody close to you will say. You hired execution. You did not hire orchestration. Your business is a band with no conductor. Talented musicians, all playing their own song. You can either become the conductor yourself and stay stuck in operations forever, or you can hire one. There is no third option, no matter how many tools or templates you stack on top.',
+    shiftHeader: 'What to do in the next 30 days:',
+    shiftSteps: ['Lock in the weekly meeting rhythm. Same day, same time, same agenda.','Build a basic scorecard with 5 to 7 numbers your team owns. Start with: lead volume, close rate, project completion percentage, churn risk, cash position, NPS, team capacity.','Pick the 7 that matter most for your business. Assign each number a single owner.','Each owner reports their number weekly in the meeting. No exceptions.','Red numbers (off target) automatically trigger an IDS in that same meeting.'],
+    shiftWhy: 'The act of measuring things changes how people work. Before any system gets installed. Before any new hire gets onboarded. The week your team realizes there is a number they own and report on, the chaos starts to settle. People stop hiding. Problems surface earlier. You stop being the only person who notices something is off, because the scorecard notices first. This is also how you start identifying who is actually carrying the team, and who has been hiding behind activity. That information alone is worth more than most $30K consultants.',
+    rebuild: 'Bring in an OBM or promote an Integrator from within. Their first 90 days: build the Accountability Chart, install meeting rhythms, document the top 5 processes, and become the single point of operational coordination. You step into Visionary work. They run the team.',
+    cta: 'This is the tier where a Scale Architect moves the needle most.',
+    ctaButton: 'Book Your Operational Diagnosis Call',
+  },
+  3: {
+    badge: 'TIER 3 of 5', name: 'The Systems Gap',
+    verdict: 'Your foundations are solid. Your operations are inconsistent.',
+    built: ['A team with rough role clarity','A launch process that works most of the time','Consistent revenue and a real client base','An operator or OBM (formal or informal) holding things together','A weekly meeting rhythm that mostly works'],
+    missing: 'Documented systems. Right now your business runs on tribal knowledge. When someone leaves, the knowledge leaves with them. Every launch feels like the first one because nothing is templated. New hires take 3x longer than they should because there is no playbook. You are past survival mode. You have not yet built the documentation layer that turns a working business into a scalable one. The cracks show up in onboarding speed, in launch consistency, in how often the same problem reappears 90 days later.',
+    cost: 'Inconsistency caps your scale. You cannot predict revenue 90 days out with confidence. Onboarding inefficiency alone costs you 4 to 8 weeks per hire. At your stage, that is a 6-figure drag annually that will not show up on a P&L, but you feel it every Monday.',
+    quickWinTruth: 'You have been telling yourself you will document things "when you have time" for over a year. Probably longer. Time is not the issue. Documenting feels like slowing down, and slowing down feels like losing momentum. So you keep building on tribal knowledge. And every time someone resigns, you panic, because the knowledge walks out the door with them. That panic is not about losing the person. It is about realizing how exposed your business actually is.',
+    quickWinHeader: 'What to do this week:',
+    quickWinSteps: ['Pick the ONE process that breaks the most often. Probably client onboarding or launch coordination.','Identify whoever runs it best on your team.','Ask them to record a single Loom walkthrough of how they actually run it, talking through each step like they are training a new hire, AND write a one-page SOP with steps, tools used, and what to watch out for. Both due by Friday.','Save it in a single shared folder. Tell the team this is where SOPs live going forward.','Aim for transferrable, not perfect. If a brand new team member could follow it tomorrow, it is good enough.'],
+    quickWinWhy: 'You are not building a documentation library this week. You are breaking a pattern. The pattern is "this lives in someone\'s head and we will deal with it later." Once you have ONE process documented, the resistance to documenting the next one drops dramatically. The first SOP is the hardest. It is also the one that signals to your team that documentation is now part of the culture, not a vague intention. Within 90 days of starting this, you will have a real library. But it starts with one Loom this Friday.',
+    shiftTruth: 'Here is the truth you have been managing around. Your business is a hostage situation, and you are the hostage. Right now, every key process exists in someone\'s head. If they leave, if they get sick, if they quit, you absorb the chaos. You have been calling this "company culture" or "we move fast." It is not culture. It is exposure. And every quarter you wait to fix it, the exposure compounds.',
+    shiftHeader: 'What to do in the next 30 days:',
+    shiftSteps: ['Build out 5 core SOPs by Day 30: client onboarding, launch coordination, hiring and onboarding new team members, weekly reporting, and one more your team identifies as the biggest pain point.','Assign each SOP an owner, usually the person who already runs that workflow.','Each SOP gets reviewed and signed off by you.','They live in a central library: Notion, ClickUp, Google Drive. Do NOT start a new tool for this. Use what you already have.','By Day 30, every new hire onboards from the library, not from your time.'],
+    shiftWhy: 'A 5-SOP foundation is the difference between a business that runs on people and a business that runs on architecture. People leave. Architecture stays. The day you finish the fifth SOP, something changes in how you sleep at night. Not because the work is done, but because you stop being the single point of failure for everything you have built. Most $1M to $3M coaches think SOPs are a "later" project. The ones who scale to $5M figure out that SOPs are not a project. They are infrastructure.',
+    rebuild: 'Build a complete operational playbook covering every key function. Onboarding playbook. Launch playbook. Client delivery playbook. Hiring playbook. Each playbook has an owner who maintains it. By Day 90, your business runs on documented systems, not on memory.',
+    cta: 'This is the tier where systemization unlocks predictable scale.',
+    ctaButton: 'Book Your Operational Diagnosis Call',
+  },
+  4: {
+    badge: 'TIER 4 of 5', name: 'The Optimization Phase',
+    verdict: 'Your operations work. You are past survival, past chaos. Now you are refining.',
+    built: ['A real operational structure with clear owners','An OBM or Integrator running the daily (or you function as one with discipline)','Most things move without you in the loop','Documented core processes for the workflows that matter','A weekly meeting rhythm that produces decisions, not just discussion'],
+    missing: 'Predictability and leverage. The business runs. You have not yet built the data layer that turns it into a precision machine. Decisions are still made on instinct more than numbers. There is a measurable somewhere (client retention, lead-to-close ratio, time-to-onboard, team utilization) that is leaking margin, and you cannot see exactly where because the scorecard is not built yet. At this tier, the bottleneck shifts from operational chaos to operational blindness. You are not missing systems. You are missing visibility.',
+    cost: 'You can scale, but margin is leaking somewhere. Probably 5 to 15 percent of net. At your stage, that is $50K to $450K per year hiding in the operational seams. Without a scorecard, you will keep finding it 6 months too late.',
+    quickWinTruth: 'You are not avoiding the scorecard because you do not have time. You are avoiding it because numbers force decisions you have been postponing. You already know which client is unprofitable. You already know which team member is underperforming. You are hoping the data will not make you act on it. It will. That is the point.',
+    quickWinHeader: 'What to do this week:',
+    quickWinSteps: ['List 7 numbers your business needs to track weekly. If you do not know where to start: lead volume, close rate, NPS or client satisfaction, cash on hand, churn risk, team utilization, project completion percentage.','Assign each number a single owner. One name per number. No committees.','Build a one-tab Google Sheet. Keep it simple. No fancy dashboards yet.','Each owner reports their number every Monday by 10am.','Review the full scorecard together every Friday for 4 weeks.'],
+    quickWinWhy: 'The first week, you will notice something interesting. Some numbers will be hard to find. That is not a failure. That is a diagnostic. It tells you exactly where your data systems are weakest, which is also usually where your operational risk is highest. By Week 4, the numbers will start telling you what to fix. You stop guessing. The scorecard removes the emotional weight from operational decisions, because the data has already made the call. You just have to act on it. And acting on data feels different than acting on hunches. It feels lighter, even when the call is hard.',
+    shiftTruth: 'Founders at your tier do not fail because of bad strategy. They fail because they keep believing their feel is more accurate than their data. Your gut is right 70 percent of the time. The other 30 percent is bleeding revenue every quarter, and the only reason you cannot see it is because you have not built the layer of visibility that would expose it. You are not running on instinct. You are running on selective memory.',
+    shiftHeader: 'What to do in the next 30 days:',
+    shiftSteps: ['Promote the Google Sheet into a real scorecard with consistent rhythm.','Each owner reports their number weekly in your team meeting.','Red numbers (off target) automatically trigger an IDS: identify the issue (not the symptom), discuss it (everyone speaks once), solve it (decide on action and assign an owner).','Do not let red numbers carry over more than 2 weeks without resolution.','Add 2 to 3 deeper metrics by Day 30: customer acquisition cost (CAC), lifetime value (LTV), gross margin per offer or per program.'],
+    shiftWhy: 'By Day 30, you will know exactly where your margin leak is, because the data will surface it. You will discover at least one of the following: a marketing channel that looks profitable but is not, a client segment with hidden delivery costs, a team member whose impact is lower than their cost, or an offer that sells well but barely makes money. You will not love what you find. That is the point. The cost of not knowing is always higher than the cost of knowing. You have been paying that cost without seeing it. Now you will see it. Then you can stop paying it.',
+    rebuild: 'Install a quarterly Rocks system. 3 to 5 strategic priorities per quarter, owned by named leaders, tracked weekly. Annual planning. Quarterly reviews. Weekly Level 10s. Your business stops drifting and starts compounding.',
+    cta: 'This is the tier where data and rhythm unlock precision scale.',
+    ctaButton: 'Book Your Operational Diagnosis Call',
+  },
+  5: {
+    badge: 'TIER 5 of 5', name: 'The Scaling Architect Tier',
+    verdict: 'You operate the business. The business does not operate you.',
+    built: ['A self-sustaining operational engine','Owners running their domains with real authority','A weekly rhythm with numbers, not just vibes','A team that can run without you for 14 or more days','You as Visionary, not as traffic controller'],
+    missing: 'At this tier, the question shifts from "fix the bottleneck" to "where is the next ceiling?" Usually it is one of three things: leadership team development (your owners need to become leaders of leaders), product-line expansion (your engine can carry more), or stepping fully into Visionary while elevating your Integrator into a COO seat. The risk now is not structural. It is strategic complacency. The same operational maturity that got you here can also become the thing that quietly stops you from going further.',
+    cost: 'Most $1M to $3M coaching businesses are NOT here. If you scored this honestly, you are in the top 10 percent of operational maturity at your stage. Do not lose this. Audit it quarterly.',
+    quickWinTruth: 'Here is what nobody at your level will say out loud. Your bottleneck is not operational anymore. It is existential. Your business runs without you, which means you finally have to answer the question you have been avoiding for years: what do you actually want now? Most founders at this tier accidentally re-create chaos. They take meetings they should not take. They jump into operations they should not jump into. Not because the business needs them, but because their identity has been wrapped up in being the one running it. Freedom is uncomfortable when you are not used to it.',
+    quickWinHeader: 'What to do this week:',
+    quickWinSteps: ['Audit your highest-leverage hour. Not "what should I do more of." The single highest-impact use of your time as the visionary of this business.','Identify it specifically. Examples: building strategic partnerships, creating signature content, recruiting senior leaders, working on the next product line, M&A conversations.','Build a 90-day calendar around protecting that hour. Block it weekly. Defend it.','Everything else gets delegated, automated, or deprioritized.','Tell your team: "This hour is non-negotiable. Treat it like an investor meeting."'],
+    quickWinWhy: 'At your tier, the question stops being "how do I do more?" It becomes "how do I do less, and have it matter more?" Most founders at this stage feel guilty about working less, even when their business is running well. That guilt is not virtue. It is identity confusion. The hour you protect this week is the hour where you start practicing the next version of yourself. The version that operates from leverage, not from involvement. The version that scales companies, not just runs them.',
+    shiftTruth: 'You have spent years building a business that does not need you. The next phase is building a life that does not need the business. Most founders never make this transition. They keep adding initiatives, products, meetings, just to feel needed. The hard truth is, your operational maturity is now ahead of your psychological readiness for what it brings. The work now is making peace with not being needed.',
+    shiftHeader: 'What to do in the next 30 days:',
+    shiftSteps: ['Run a leadership team offsite. One day, full focus, no distractions.','The agenda is one question: "What is the next ceiling, and what would it take to break it?"','Your senior team should be the ones answering. Listen more than you speak.','Their answers tell you who is ready to step up and who is plateauing.','After the offsite, make ONE decision: are you scaling further, holding steady, or rebuilding for an exit?','Document the decision. Share it with the team within 7 days.'],
+    shiftWhy: 'The businesses that successfully scale past $3M start building the $5M structure 12 months before they need it. The ones that stall do so not because the operational machine fails, but because the founder cannot decide what they want next. The offsite forces the decision. Your team\'s answers will reveal which leaders are ready for more authority. Your own clarity (or lack of it) will reveal whether you are actually ready to scale, or whether you are subconsciously holding the business back to keep yourself relevant. Both answers are useful. Both lead somewhere different. The worst move is staying in the gray zone for another year.',
+    rebuild: 'Define your next stage architecture. If you are scaling to $5M, the operational structure that got you to $3M will not get you there. Map the org chart you need at $5M, identify the gaps, and start the hires now. The businesses that successfully scale past $3M start building the $5M structure 12 months before they need it.',
+    cta: 'This is the tier where the conversation becomes strategic, not operational.',
+    ctaButton: 'Book A Strategic Diagnosis Call',
+  },
+};
+
+const CALENDLY_URL = 'https://calendly.com/scale-architect/30min';
+
+function getTier(score) {
+  if (score <= 36) return 1;
+  if (score <= 52) return 2;
+  if (score <= 68) return 3;
+  if (score <= 84) return 4;
+  return 5;
+}
+
+const colors = {
+  white: '#FFFFFF', cream: '#F5EFE0', softCream: '#E8DFC8', muted: '#A89A86', dim: '#7A6E5E',
+  gold: '#D4A574', goldLight: '#E8C896', burgundy: '#4A1A28', deepBurgundy: '#2A0A14',
+  midBurgundy: '#3A1220', glow: 'rgba(212, 165, 116, 0.4)',
+};
+
+const pageBg = {
+  background: `radial-gradient(ellipse at top left, #5A1F30 0%, transparent 50%), radial-gradient(ellipse at bottom right, #3A1220 0%, transparent 50%), linear-gradient(135deg, #1A0508 0%, #4A1A28 50%, #2A0A14 100%)`,
+  backgroundAttachment: 'fixed',
+};
+
+const noiseTexture = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.85 0 0 0 0 0.7 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>`;
+
+const NoiseOverlay = () => (
+  <div className="pointer-events-none fixed inset-0 z-0" style={{ backgroundImage: `url("${noiseTexture}")`, opacity: 0.4, mixBlendMode: 'overlay' }} />
+);
+
+const cardStyle = {
+  background: 'linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+  backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+  border: '1px solid rgba(212, 165, 116, 0.18)',
+};
+
+function FounderBottleneckAudit() {
+  const [screen, setScreen] = useState('intro');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [currentSection, setCurrentSection] = useState(0);
+  const [answers, setAnswers] = useState(Array(20).fill(null));
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [fadeIn, setFadeIn] = useState(true);
+
+  useEffect(() => {
+    if (screen === 'section-divider') {
+      const timer = setTimeout(() => {
+        setScreen('quiz');
+        setFadeIn(false);
+        setTimeout(() => setFadeIn(true), 50);
+      }, 2200);
+      return () => clearTimeout(timer);
+    }
+  }, [screen, currentSection]);
+
+  const transitionTo = (action) => {
+    setFadeIn(false);
+    setTimeout(() => { action(); setFadeIn(true); }, 250);
+  };
+
+  const startAudit = () => {
+    setCurrentSection(0); setCurrentQuestion(0);
+    setAnswers(Array(20).fill(null)); setSelectedAnswer(null);
+    transitionTo(() => setScreen('section-divider'));
+  };
+
+  const handleNext = () => {
+    if (selectedAnswer === null) return;
+    const newAnswers = [...answers];
+    newAnswers[currentQuestion] = selectedAnswer;
+    setAnswers(newAnswers);
+    if (currentQuestion === 19) { transitionTo(() => setScreen('results')); return; }
+    const nextQuestion = currentQuestion + 1;
+    const nextSection = questions[nextQuestion].section;
+    if (nextSection !== currentSection) {
+      transitionTo(() => {
+        setCurrentSection(nextSection); setCurrentQuestion(nextQuestion);
+        setSelectedAnswer(newAnswers[nextQuestion]); setScreen('section-divider');
+      });
+    } else {
+      transitionTo(() => { setCurrentQuestion(nextQuestion); setSelectedAnswer(newAnswers[nextQuestion]); });
+    }
+  };
+
+  const handleBack = () => {
+    if (currentQuestion === 0) return;
+    const prevQuestion = currentQuestion - 1;
+    const prevSection = questions[prevQuestion].section;
+    transitionTo(() => {
+      setCurrentQuestion(prevQuestion); setCurrentSection(prevSection);
+      setSelectedAnswer(answers[prevQuestion]);
+    });
+  };
+
+  const handleContinueDivider = () => { transitionTo(() => setScreen('quiz')); };
+
+  const totalScore = answers.reduce((sum, val) => sum + (val || 0), 0);
+  const tier = getTier(totalScore);
+  const tierInfo = tierData[tier];
+
+  if (screen === 'intro') {
+    return (
+      <div className="min-h-screen w-full relative" style={{ ...pageBg, color: colors.cream }}>
+        <NoiseOverlay />
+        <div className={`relative z-10 max-w-3xl mx-auto px-6 sm:px-10 py-12 sm:py-20 transition-opacity duration-500 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-3" style={{ color: colors.goldLight }}>
+              <div className="h-px w-8" style={{ background: `linear-gradient(to right, transparent, ${colors.gold})` }} />
+              <span style={{ fontFamily: 'Georgia, serif', fontSize: '14px', letterSpacing: '0.25em', fontWeight: 400 }}>
+                ROXY <span style={{ color: colors.dim, margin: '0 6px' }}>|</span> SCALE ARCHITECT
+              </span>
+              <div className="h-px w-8" style={{ background: `linear-gradient(to left, transparent, ${colors.gold})` }} />
+            </div>
+          </div>
+          <div className="text-center mb-12">
+            <div className="inline-block px-7 py-4 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(212, 165, 116, 0.12) 0%, rgba(212, 165, 116, 0.04) 100%)', border: `1px solid rgba(212, 165, 116, 0.35)`, boxShadow: `0 0 40px rgba(212, 165, 116, 0.08)` }}>
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <span style={{ color: colors.muted, textDecoration: 'line-through', fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px' }}>Valued at $197</span>
+                <span style={{ color: colors.goldLight, fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px', fontWeight: 500, letterSpacing: '0.02em' }}>A gift for you today</span>
+              </div>
+              <p className="mt-1 italic" style={{ color: colors.softCream, fontFamily: 'Georgia, serif', fontSize: '13px' }}>On me, because I want to help you scale.</p>
+            </div>
+          </div>
+          <h1 className="text-center mb-7" style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 'clamp(40px, 6vw, 64px)', fontWeight: 600, lineHeight: 1.05, letterSpacing: '-0.02em' }}>
+            <span style={{ background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.goldLight} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>The Founder<br />Bottleneck Audit</span>
+          </h1>
+          <p className="text-center mb-10 max-w-2xl mx-auto" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 'clamp(16px, 2vw, 19px)', fontWeight: 400, lineHeight: 1.6, color: colors.softCream }}>
+            The 12-minute operational diagnostic that shows you exactly which structural leak is capping your growth, and the specific architecture shift that unlocks your next $500K without hiring more people, working more hours, or buying another course.
+          </p>
+          <div className="max-w-2xl mx-auto mb-12 px-7 py-7 rounded-xl" style={{ ...cardStyle }}>
+            <p className="italic mb-3" style={{ fontFamily: 'Georgia, serif', fontSize: '16px', lineHeight: 1.7, color: colors.cream }}>
+              Here is what nobody warns you about between $1M and $3M. The heaviness creeping back in is structural. It is hiding in handoffs you cannot see, decisions that all route through you, processes that live in someone's head.
+            </p>
+            <p className="italic" style={{ fontFamily: 'Georgia, serif', fontSize: '16px', lineHeight: 1.7, color: colors.cream }}>
+              From the inside, it looks like a discipline problem. From the outside, it is obvious. This audit takes you outside.
+            </p>
+          </div>
+          <div className="max-w-xl mx-auto mb-14 space-y-4">
+            {['The exact operational tier you are in right now (1 of 5)','What you have already done right, and the single piece that is still missing','Your layered action plan: 7-day quick win, 30-day shift, 90-day rebuild'].map((bullet, i) => (
+              <div key={i} className="flex items-start gap-4">
+                <div className="flex-shrink-0 mt-1">
+                  <svg width="16" height="16" viewBox="0 0 16 16">
+                    <defs><linearGradient id={`arrow-grad-${i}`} x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor={colors.gold} /><stop offset="100%" stopColor={colors.goldLight} /></linearGradient></defs>
+                    <path d="M2 8 L12 8 M8 4 L12 8 L8 12" stroke={`url(#arrow-grad-${i})`} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '17px', lineHeight: 1.55, color: colors.cream }}>{bullet}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col items-center">
+            <button onClick={startAudit} className="group relative px-12 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5"
+              style={{ background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 50%, ${colors.gold} 100%)`, color: colors.deepBurgundy, fontFamily: 'Inter, system-ui, sans-serif', fontSize: '15px', fontWeight: 700, letterSpacing: '0.12em', boxShadow: `0 4px 24px rgba(212, 165, 116, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)`, border: 'none', cursor: 'pointer' }}
+              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 8px 32px rgba(212, 165, 116, 0.5), inset 0 1px 0 rgba(255,255,255,0.4)`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 4px 24px rgba(212, 165, 116, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)`; }}>
+              BEGIN MY AUDIT
+            </button>
+            <p className="mt-5 text-center" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '13px', color: colors.muted, letterSpacing: '0.02em' }}>20 questions. 10 to 12 minutes. Honest answers only.</p>
+          </div>
+          <div className="mt-16 text-center"><p style={{ fontFamily: 'Georgia, serif', fontSize: '13px', color: colors.dim, fontStyle: 'italic' }}>Built for $1M to $3M coaching CEOs.</p></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'section-divider') {
+    const sectionInfo = sections[currentSection];
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center relative" style={pageBg}>
+        <NoiseOverlay />
+        <div className={`relative z-10 max-w-2xl mx-auto px-6 text-center transition-opacity duration-500 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="mb-8" style={{ color: colors.goldLight, fontFamily: 'Georgia, serif', fontSize: '14px', letterSpacing: '0.3em', fontWeight: 400 }}>SECTION {currentSection + 1} OF 4</div>
+          <div className="mb-8 relative inline-block" style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(72px, 12vw, 120px)', fontWeight: 300, lineHeight: 1, letterSpacing: '-0.04em', background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 50%, ${colors.gold} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: `drop-shadow(0 0 30px rgba(212, 165, 116, 0.3))` }}>{sectionInfo.number}</div>
+          <h2 className="mb-6" style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(32px, 5vw, 48px)', color: colors.cream, fontWeight: 500, lineHeight: 1.15, letterSpacing: '-0.01em' }}>{sectionInfo.title}</h2>
+          <p className="italic mb-12 max-w-lg mx-auto" style={{ fontFamily: 'Georgia, serif', fontSize: '17px', color: colors.softCream, lineHeight: 1.6 }}>{sectionInfo.description}</p>
+          <button onClick={handleContinueDivider} className="text-sm transition-opacity duration-300 hover:opacity-70" style={{ color: colors.goldLight, fontFamily: 'Inter, system-ui, sans-serif', fontSize: '13px', letterSpacing: '0.2em', borderBottom: `1px solid ${colors.gold}`, paddingBottom: '4px', background: 'transparent', border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: colors.gold, cursor: 'pointer' }}>CONTINUE</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'quiz') {
+    const q = questions[currentQuestion];
+    const progressPct = ((currentQuestion) / 20) * 100;
+    return (
+      <div className="min-h-screen w-full relative" style={{ ...pageBg, color: colors.cream }}>
+        <NoiseOverlay />
+        <div className="relative z-10 max-w-3xl mx-auto px-6 sm:px-10 py-10 sm:py-14">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '12px', color: colors.goldLight, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 500 }}>Section {currentSection + 1} of 4 · {sections[currentSection].title}</span>
+            <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '12px', color: colors.muted, letterSpacing: '0.05em' }}>{currentQuestion + 1} / 20</span>
+          </div>
+          <div className="w-full h-1 mb-12 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+            <div className="h-full transition-all duration-500 ease-out" style={{ width: `${progressPct}%`, background: `linear-gradient(90deg, ${colors.gold} 0%, ${colors.goldLight} 100%)`, boxShadow: `0 0 12px rgba(212, 165, 116, 0.5)` }} />
+          </div>
+          <div className={`transition-opacity duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="mb-3" style={{ fontFamily: 'Georgia, serif', fontSize: '13px', color: colors.goldLight, fontStyle: 'italic', letterSpacing: '0.05em' }}>{q.title}</div>
+            <h2 className="mb-10" style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 500, lineHeight: 1.3, color: colors.cream, letterSpacing: '-0.01em' }}>{q.prompt}</h2>
+            <div className="space-y-3 mb-10">
+              {q.options.map((opt) => {
+                const isSelected = selectedAnswer === opt.points;
+                return (
+                  <button key={opt.points} onClick={() => setSelectedAnswer(opt.points)} className="w-full text-left px-6 py-5 rounded-xl transition-all duration-300"
+                    style={{ background: isSelected ? `linear-gradient(145deg, rgba(212, 165, 116, 0.18) 0%, rgba(212, 165, 116, 0.08) 100%)` : `linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)`, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: isSelected ? `1px solid ${colors.gold}` : `1px solid rgba(255, 255, 255, 0.08)`, color: colors.cream, fontFamily: 'Inter, system-ui, sans-serif', fontSize: '16px', lineHeight: 1.55, fontWeight: 400, boxShadow: isSelected ? `0 0 24px rgba(212, 165, 116, 0.15)` : 'none', cursor: 'pointer' }}
+                    onMouseEnter={(e) => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(212, 165, 116, 0.4)'; e.currentTarget.style.background = 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)'; } }}
+                    onMouseLeave={(e) => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.background = 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'; } }}>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center transition-all duration-300" style={{ border: `1.5px solid ${isSelected ? colors.gold : 'rgba(255,255,255,0.3)'}`, background: isSelected ? `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)` : 'transparent', boxShadow: isSelected ? `0 0 12px rgba(212, 165, 116, 0.6)` : 'none' }}>
+                        {isSelected && (<div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.deepBurgundy }} />)}
+                      </div>
+                      <span>{opt.text}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <button onClick={handleBack} disabled={currentQuestion === 0} className="transition-opacity duration-200" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '13px', color: currentQuestion === 0 ? colors.dim : colors.muted, letterSpacing: '0.15em', cursor: currentQuestion === 0 ? 'default' : 'pointer', background: 'transparent', border: 'none' }}>← BACK</button>
+              <button onClick={handleNext} disabled={selectedAnswer === null} className="px-8 py-3 rounded-full transition-all duration-300"
+                style={{ background: selectedAnswer === null ? 'rgba(255,255,255,0.08)' : `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 50%, ${colors.gold} 100%)`, color: selectedAnswer === null ? colors.dim : colors.deepBurgundy, cursor: selectedAnswer === null ? 'not-allowed' : 'pointer', fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px', fontWeight: 700, letterSpacing: '0.12em', boxShadow: selectedAnswer === null ? 'none' : `0 4px 20px rgba(212, 165, 116, 0.35), inset 0 1px 0 rgba(255,255,255,0.3)`, border: 'none' }}
+                onMouseEnter={(e) => { if (selectedAnswer !== null) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px rgba(212, 165, 116, 0.5), inset 0 1px 0 rgba(255,255,255,0.4)`; } }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; if (selectedAnswer !== null) { e.currentTarget.style.boxShadow = `0 4px 20px rgba(212, 165, 116, 0.35), inset 0 1px 0 rgba(255,255,255,0.3)`; } }}>
+                {currentQuestion === 19 ? 'SEE MY DIAGNOSIS →' : 'NEXT →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'results') {
+    return (
+      <div className="min-h-screen w-full relative" style={{ ...pageBg, color: colors.cream }}>
+        <NoiseOverlay />
+        <div className={`relative z-10 max-w-3xl mx-auto px-6 sm:px-10 py-12 sm:py-16 transition-opacity duration-500 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="text-center mb-8">
+            <div className="inline-block px-6 py-2 rounded-full mb-6" style={{ background: `linear-gradient(135deg, rgba(212, 165, 116, 0.15) 0%, rgba(212, 165, 116, 0.05) 100%)`, border: `1px solid rgba(212, 165, 116, 0.5)`, color: colors.goldLight, fontFamily: 'Inter, system-ui, sans-serif', fontSize: '12px', letterSpacing: '0.3em', fontWeight: 600, boxShadow: `0 0 20px rgba(212, 165, 116, 0.15)` }}>{tierInfo.badge}</div>
+            <div className="mb-6" style={{ fontFamily: 'Georgia, serif', fontSize: '15px', color: colors.muted, letterSpacing: '0.05em' }}>YOUR SCORE: <span style={{ background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 700, fontSize: '18px' }}>{totalScore}</span> <span style={{ color: colors.dim }}>/ 100</span></div>
+            <h1 className="mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 'clamp(40px, 6vw, 60px)', fontWeight: 600, lineHeight: 1.05, letterSpacing: '-0.02em' }}><span style={{ background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.goldLight} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{tierInfo.name}</span></h1>
+            <p className="italic max-w-xl mx-auto" style={{ fontFamily: 'Georgia, serif', fontSize: '19px', color: colors.softCream, lineHeight: 1.5 }}>{tierInfo.verdict}</p>
+          </div>
+          <div className="my-12 flex justify-center"><div className="w-20 h-px" style={{ background: `linear-gradient(to right, transparent, ${colors.gold}, transparent)` }} /></div>
+          <section className="mb-14 px-7 py-7 rounded-2xl" style={cardStyle}>
+            <h3 className="mb-6" style={{ fontFamily: 'Georgia, serif', fontSize: '13px', color: colors.goldLight, letterSpacing: '0.25em', fontWeight: 500 }}>WHAT YOU HAVE ALREADY BUILT</h3>
+            <ul className="space-y-3">
+              {tierInfo.built.map((item, i) => (
+                <li key={i} className="flex items-start gap-4">
+                  <svg width="18" height="18" viewBox="0 0 18 18" className="mt-1 flex-shrink-0">
+                    <defs><linearGradient id={`check-grad-${i}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={colors.gold} /><stop offset="100%" stopColor={colors.goldLight} /></linearGradient></defs>
+                    <path d="M3 9 L7 13 L15 5" stroke={`url(#check-grad-${i})`} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '16px', lineHeight: 1.6, color: colors.cream }}>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section className="mb-14">
+            <h3 className="mb-6" style={{ fontFamily: 'Georgia, serif', fontSize: '13px', color: colors.goldLight, letterSpacing: '0.25em', fontWeight: 500 }}>WHAT IS ACTUALLY MISSING</h3>
+            <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '17px', lineHeight: 1.7, color: colors.cream }}>{tierInfo.missing}</p>
+          </section>
+          <section className="mb-14 px-8 py-8 rounded-2xl relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(212, 165, 116, 0.10) 0%, rgba(212, 165, 116, 0.02) 100%)', border: `1px solid rgba(212, 165, 116, 0.3)`, boxShadow: `0 0 30px rgba(212, 165, 116, 0.08)` }}>
+            <div className="absolute top-0 left-0 w-1 h-full" style={{ background: `linear-gradient(to bottom, ${colors.gold}, ${colors.goldLight})` }} />
+            <h3 className="mb-4" style={{ fontFamily: 'Georgia, serif', fontSize: '13px', color: colors.goldLight, letterSpacing: '0.25em', fontWeight: 600 }}>{tier === 5 ? 'THE HONEST NOTE' : 'THE REVENUE COST'}</h3>
+            <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '17px', lineHeight: 1.7, color: colors.cream }}>{tierInfo.cost}</p>
+          </section>
+          <section className="mb-14">
+            <h3 className="mb-6" style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 3vw, 30px)', fontWeight: 500, letterSpacing: '-0.01em' }}><span style={{ background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.goldLight} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Your 7-Day Quick Win</span></h3>
+            <div className="mb-7 pl-6 pr-5 py-5 rounded-r-xl" style={{ borderLeft: `2px solid ${colors.gold}`, background: 'linear-gradient(90deg, rgba(212, 165, 116, 0.06) 0%, transparent 100%)' }}>
+              <p className="italic" style={{ fontFamily: 'Georgia, serif', fontSize: '17px', lineHeight: 1.7, color: colors.softCream }}>{tierInfo.quickWinTruth}</p>
+            </div>
+            <p className="mb-4" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '15px', fontWeight: 600, color: colors.goldLight, letterSpacing: '0.02em' }}>{tierInfo.quickWinHeader}</p>
+            <ol className="mb-6 space-y-3 pl-1">
+              {tierInfo.quickWinSteps.map((step, i) => (
+                <li key={i} className="flex gap-4">
+                  <span className="flex-shrink-0" style={{ fontFamily: 'Georgia, serif', fontSize: '16px', color: colors.gold, fontWeight: 600, fontStyle: 'italic', minWidth: '22px' }}>{i + 1}.</span>
+                  <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '16px', lineHeight: 1.6, color: colors.cream }}>{step}</span>
+                </li>
+              ))}
+            </ol>
+            <p className="mb-3" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '15px', fontWeight: 600, color: colors.goldLight, letterSpacing: '0.02em' }}>Why this works:</p>
+            <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '16px', lineHeight: 1.7, color: colors.cream }}>{tierInfo.quickWinWhy}</p>
+          </section>
+          <section className="mb-14">
+            <h3 className="mb-6" style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 3vw, 30px)', fontWeight: 500, letterSpacing: '-0.01em' }}><span style={{ background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.goldLight} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Your 30-Day Shift</span></h3>
+            <div className="mb-7 pl-6 pr-5 py-5 rounded-r-xl" style={{ borderLeft: `2px solid ${colors.gold}`, background: 'linear-gradient(90deg, rgba(212, 165, 116, 0.06) 0%, transparent 100%)' }}>
+              <p className="italic" style={{ fontFamily: 'Georgia, serif', fontSize: '17px', lineHeight: 1.7, color: colors.softCream }}>{tierInfo.shiftTruth}</p>
+            </div>
+            <p className="mb-4" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '15px', fontWeight: 600, color: colors.goldLight, letterSpacing: '0.02em' }}>{tierInfo.shiftHeader}</p>
+            <ol className="mb-6 space-y-3 pl-1">
+              {tierInfo.shiftSteps.map((step, i) => (
+                <li key={i} className="flex gap-4">
+                  <span className="flex-shrink-0" style={{ fontFamily: 'Georgia, serif', fontSize: '16px', color: colors.gold, fontWeight: 600, fontStyle: 'italic', minWidth: '22px' }}>{i + 1}.</span>
+                  <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '16px', lineHeight: 1.6, color: colors.cream }}>{step}</span>
+                </li>
+              ))}
+            </ol>
+            <p className="mb-3" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '15px', fontWeight: 600, color: colors.goldLight, letterSpacing: '0.02em' }}>Why this works:</p>
+            <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '16px', lineHeight: 1.7, color: colors.cream }}>{tierInfo.shiftWhy}</p>
+          </section>
+          <section className="mb-14">
+            <h3 className="mb-6" style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 3vw, 30px)', fontWeight: 500, letterSpacing: '-0.01em' }}><span style={{ background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.goldLight} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Your 90-Day Rebuild</span></h3>
+            <p style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: '17px', lineHeight: 1.7, color: colors.cream }}>{tierInfo.rebuild}</p>
+          </section>
+          <section className="mb-12 px-8 py-12 rounded-2xl text-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 50%, ${colors.gold} 100%)`, boxShadow: `0 8px 40px rgba(212, 165, 116, 0.25), inset 0 1px 0 rgba(255,255,255,0.4)` }}>
+            <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(ellipse at top, rgba(255,255,255,0.4) 0%, transparent 60%)` }} />
+            <div className="relative z-10">
+              <p className="mb-7 italic max-w-lg mx-auto" style={{ fontFamily: 'Georgia, serif', fontSize: '19px', lineHeight: 1.5, color: colors.deepBurgundy, fontWeight: 500 }}>{tierInfo.cta}</p>
+              <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer" className="inline-block px-10 py-4 rounded-full transition-all duration-300"
+                style={{ background: `linear-gradient(135deg, ${colors.deepBurgundy} 0%, ${colors.burgundy} 100%)`, color: colors.goldLight, fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px', fontWeight: 700, letterSpacing: '0.12em', textDecoration: 'none', boxShadow: `0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)` }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)`; }}>
+                {tierInfo.ctaButton.toUpperCase()} →
+              </a>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<FounderBottleneckAudit />);
+</script>
+</body>
+</html>
