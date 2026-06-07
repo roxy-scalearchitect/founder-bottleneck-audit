@@ -1,0 +1,14 @@
+# Netlify build config for Aries (static Vite app, fully client-side).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Single-page app: serve index.html for any path that isn't a real file.
+# (Real assets under /assets/* are matched first, so they're unaffected.)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
