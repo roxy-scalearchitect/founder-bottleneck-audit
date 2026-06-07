@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(255, 59, 48, 0.12), transparent 60%),
+      linear-gradient(180deg, #1a0508 0%, #2a0a0f 100%);
+    background-attachment: fixed;
+    color: #fff1ec;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    /* Respect notches on phones held in landscape while training */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+}
+
+@layer utilities {
+  .text-flame-glow {
+    text-shadow:
+      0 0 18px rgba(255, 59, 48, 0.65),
+      0 0 48px rgba(255, 122, 24, 0.45);
+  }
+
+  .font-numerals {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  /* Hide scrollbars during immersive rounds without disabling scroll */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
